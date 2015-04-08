@@ -1,0 +1,52 @@
+# WobbleView
+
+WobbleView is an implementation of a recently popular wobble effect for any view in your app. It can be used to easily add dynamics to user interactions and transitions. 
+
+![Wobble](https://github.com/inFullMobile/WobbleView/blob/master/wobble.gif?raw=true)
+
+## Installation
+
+There are two options:
+
+1. WobbleView is available in Cocoapods.
+2. Manually add the files into your Xcode project. Slightly simpler, but updates are also manual.
+
+## Usage
+
+Just create a WobbleView and change its position.  
+
+```
+self.wobbleView.frame.origin = CGPoint(x: randomX, y: randomY)
+```
+
+or 
+
+```
+self.wobbleView.center.origin = CGPoint(x: randomX, y: randomY)
+```
+
+or animate view's constraints.
+
+## Properties
+
+```
+internal var frequency: CGFloat = 3
+```
+
+The frequency of oscillation for the wobble behavior.
+
+```
+internal var damping: CGFloat = 0.3
+```
+
+The amount of damping to apply to the wobble behavior.
+
+```
+var edges: ViewEdge = ViewEdge.Right
+```
+
+A bitmask value that identifies the edges that you want to wobble. You can use this parameter to wobble only a subset of the sides of the rectangle.
+
+## License
+
+Released under the MIT license. See the LICENSE file for more info.
