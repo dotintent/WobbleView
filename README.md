@@ -2,6 +2,8 @@
 
 WobbleView is an implementation of a recently popular wobble effect for any view in your app. It can be used to easily add dynamics to user interactions and transitions. 
 
+Check this [project on Dribble](https://dribbble.com/shots/2009891-Bits-and-pixels-Wobble-Effect).
+
 ![Wobble](https://github.com/inFullMobile/WobbleView/blob/master/wobble.gif?raw=true)
 
 ## Installation
@@ -46,6 +48,11 @@ var edges: ViewEdge = ViewEdge.Right
 ```
 
 A bitmask value that identifies the edges that you want to wobble. You can use this parameter to wobble only a subset of the sides of the rectangle.
+
+## Requirements
+
+- iOS 7.0+
+- Xcode 6.3
 
 ## License
 

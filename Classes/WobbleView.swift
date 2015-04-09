@@ -44,7 +44,7 @@ class WobbleView: UIView, WobbleDelegate {
         
         layer.masksToBounds = false
         layer.addSublayer(maskLayer)
-        (layer as WobbleLayer).wobbleDelegate = self
+        (layer as! WobbleLayer).wobbleDelegate = self
         
         setUpVertices()
         setUpMidpoints()
@@ -130,14 +130,14 @@ class WobbleView: UIView, WobbleDelegate {
         bezierPath.closePath()
         
         maskLayer.path = bezierPath.CGPath
-        (layer as CAShapeLayer).path = bezierPath.CGPath
+        (layer as! CAShapeLayer).path = bezierPath.CGPath
         layer.mask = maskLayer
     }
     
     // MARK: overrides
     override var backgroundColor: UIColor? {
         didSet {
-            (layer as CAShapeLayer).fillColor = backgroundColor!.CGColor
+            (layer as! CAShapeLayer).fillColor = backgroundColor!.CGColor
         }
     }
     
@@ -273,7 +273,7 @@ private class WobbleLayer: CAShapeLayer {
 
 struct ViewEdge : RawOptionSetType, BooleanType {
     
-    private let value: UInt = 0
+    private var value: UInt = 0
     
     init(nilLiteral: ()) {}
     
