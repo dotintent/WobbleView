@@ -10,7 +10,7 @@ Check this [project on Dribble](https://dribbble.com/shots/2009891-Bits-and-pixe
 
 There are two options:
 
-1. WobbleView is available in Cocoapods.
+1. WobbleView is available via CocoaPods.
 2. Manually add the files into your Xcode project. Slightly simpler, but updates are also manual.
 
 ## Usage
@@ -24,10 +24,10 @@ self.wobbleView.frame.origin = CGPoint(x: randomX, y: randomY)
 or 
 
 ```
-self.wobbleView.center.origin = CGPoint(x: randomX, y: randomY)
+self.wobbleView.center = CGPoint(x: randomX, y: randomY)
 ```
 
-or animate view's constraints.
+or animate the view’s constraints.
 
 ## Properties
 
