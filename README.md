@@ -17,13 +17,13 @@ There are two options:
 
 Just create a WobbleView and change its position.  
 
-```
+```swift
 self.wobbleView.frame.origin = CGPoint(x: randomX, y: randomY)
 ```
 
 or 
 
-```
+```swift
 self.wobbleView.center = CGPoint(x: randomX, y: randomY)
 ```
 
@@ -31,19 +31,19 @@ or animate the view's constraints.
 
 ## Properties
 
-```
+```swift
 internal var frequency: CGFloat = 3
 ```
 
 The frequency of oscillation for the wobble behavior.
 
-```
+```swift
 internal var damping: CGFloat = 0.3
 ```
 
 The amount of damping to apply to the wobble behavior.
 
-```
+```swift
 var edges: ViewEdge = ViewEdge.Right
 ```
 
