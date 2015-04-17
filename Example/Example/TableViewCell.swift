@@ -13,12 +13,24 @@ class TableViewCell: UITableViewCell {
     @IBOutlet weak var leadingSpaceConstraint: NSLayoutConstraint!
     @IBOutlet weak var trailingSpaceConstraint: NSLayoutConstraint!
     @IBOutlet weak var panView: WobbleView!
+    @IBOutlet weak var userAvatarImageView: UIImageView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        layoutMargins = UIEdgeInsetsZero
-        preservesSuperviewLayoutMargins = false
+        if self.respondsToSelector(Selector("setLayoutMargins:")) {
+        
+            layoutMargins = UIEdgeInsetsZero
+        }
+        
+        if self.respondsToSelector(Selector("setPreservesSuperviewLayoutMargins:")) {
+            
+            preservesSuperviewLayoutMargins = false
+        }
+        
+        var avatar = UIImage(named: "ic_user")?.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+        self.userAvatarImageView.image = avatar
+        self.userAvatarImageView.tintColor = UIColor(red: 187/255.0, green: 193/255.0, blue: 209/255.0, alpha: 1.0)
         
         panView.edges = ViewEdge.Right
         
