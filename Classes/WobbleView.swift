@@ -48,7 +48,7 @@ public class WobbleView: UIView, WobbleDelegate {
         
         setUpVertices()
         setUpMidpoints()
-        setUpCenter()
+        setUpCenters()
         setUpBehaviours()
         setUpDisplayLink()
     }
@@ -77,13 +77,18 @@ public class WobbleView: UIView, WobbleDelegate {
         createAdditionalViews(&midpointViews, origins: midpointsOrigins)
     }
     
-    private func setUpCenter() {
+    private func setUpCenters() {
         
-        var centerOrigin = CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height/2)
+        centerViews = []
         
-        centerView = UIView(frame: CGRect(origin: centerOrigin, size: CGSizeMake(1, 1)))
-        centerView.backgroundColor = UIColor.clearColor()
-        addSubview(centerView)
+        var radius = min(frame.size.width/2, frame.size.height/2)
+        
+        let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
+            CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
+            CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
+            CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
+        
+        createAdditionalViews(&centerViews, origins: centersOrigins)
     }
     
     private func setUpBehaviours() {
@@ -91,16 +96,16 @@ public class WobbleView: UIView, WobbleDelegate {
         animator = UIDynamicAnimator(referenceView: self)
         animator!.delegate = self
         verticesAttachments = []
-        centerAttachments = []
+        centersAttachments = []
         
         for (i, midPointView) in enumerate(midpointViews) {
             
             let formerVertexIndex = i
             let latterVertexIndex = (i + 1) % vertexViews.count
             
-            createVertexAttachment(midPointView, vertexIndex: formerVertexIndex)
-            createVertexAttachment(midPointView, vertexIndex: latterVertexIndex)
-            createCenterAttachment(midPointView)
+            createAttachmentBehaviour(&verticesAttachments, view: midPointView, vertexIndex: formerVertexIndex)
+            createAttachmentBehaviour(&verticesAttachments, view: midPointView, vertexIndex: latterVertexIndex)
+            createAttachmentBehaviour(&centersAttachments, view: midPointView, vertexIndex: formerVertexIndex)
         }
     }
     
@@ -113,8 +118,8 @@ public class WobbleView: UIView, WobbleDelegate {
     // MARK: CADisplayLink selector
     internal func displayLinkUpdate(sender: CADisplayLink) {
         
-        for behavour in centerAttachments {
-            behavour.anchorPoint = centerView.layer.presentationLayer().frame.origin
+        for behavour in centersAttachments {
+            behavour.anchorPoint = centerViews[behavour.vertexIndex!].layer.presentationLayer().frame.origin
         }
         
         for behavour in verticesAttachments {
@@ -158,25 +163,15 @@ public class WobbleView: UIView, WobbleDelegate {
         }
     }
     
-    private func createVertexAttachment(view: UIView, vertexIndex: Int) {
+    private func createAttachmentBehaviour(inout behaviours: [VertexAttachmentBehaviour], view: UIView, vertexIndex: Int) {
         
-        var formerVertexAttachment = MidPointAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
-        formerVertexAttachment.damping = damping
-        formerVertexAttachment.frequency = frequency
-        formerVertexAttachment.vertexIndex = vertexIndex
-        animator!.addBehavior(formerVertexAttachment)
+        var attachmentBehaviour = VertexAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
+        attachmentBehaviour.damping = damping
+        attachmentBehaviour.frequency = frequency
+        attachmentBehaviour.vertexIndex = vertexIndex
+        animator!.addBehavior(attachmentBehaviour)
         
-        verticesAttachments.append(formerVertexAttachment)
-    }
-    
-    private func createCenterAttachment(view: UIView) {
-        
-        var centerAttachment = UIAttachmentBehavior(item: view, attachedToAnchor: centerView.frame.origin)
-        centerAttachment.damping = damping
-        centerAttachment.frequency = frequency
-        animator!.addBehavior(centerAttachment)
-        
-        centerAttachments.append(centerAttachment)
+        behaviours.append(attachmentBehaviour)
     }
     
     private func addEdge(inout bezierPath: UIBezierPath, formerVertex: Int, latterVertex: Int, curved: ViewEdge) {
@@ -199,21 +194,21 @@ public class WobbleView: UIView, WobbleDelegate {
     // views considered as rectangle's vertices
     private var vertexViews:[UIView] = []
     
-    // views considered as midpoints of rectangle's sides
+    // views considered as midpoints of rectangle's edges
     private var midpointViews:[UIView] = []
     
-    // view considered as center of rectangle
-    private var centerView: UIView = UIView()
+    // views considered as centers for rectangle's edges
+    private var centerViews: [UIView] = []
     
     private var animator: UIDynamicAnimator?
     private var displayLink: CADisplayLink?
     private var maskLayer: CAShapeLayer = CAShapeLayer()
     
     // midpoints' attachment behaviours to vertices views
-    private var verticesAttachments:[MidPointAttachmentBehaviour] = []
+    private var verticesAttachments:[VertexAttachmentBehaviour] = []
     
     // midpoints' attachment behaviours to center view
-    private var centerAttachments:[UIAttachmentBehavior] = []
+    private var centersAttachments:[VertexAttachmentBehaviour] = []
 }
 
 // MARK: UIDynamicAnimatorDelegate
@@ -239,8 +234,17 @@ extension WobbleView: WobbleDelegate {
         for (i, vertexView)  in enumerate(vertexViews)    {
             vertexView.frame.origin = verticesOrigins[i]
         }
+                
+        var radius = min(frame.size.width/2, frame.size.height/2)
         
-        centerView.frame.origin = CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height/2)
+        let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
+            CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
+            CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
+            CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
+        
+        for (i, centerView)  in enumerate(centerViews)    {
+            centerView.frame.origin = centersOrigins[i]
+        }
     }
 }
 
@@ -252,7 +256,7 @@ private func - (left: CGPoint, right: CGPoint) -> CGPoint {
     return CGPoint(x: left.x - right.x, y: left.y - right.y)
 }
 
-private class MidPointAttachmentBehaviour: UIAttachmentBehavior {
+private class VertexAttachmentBehaviour: UIAttachmentBehavior {
     var vertexIndex: Int?
 }
 
