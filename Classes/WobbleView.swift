@@ -9,38 +9,38 @@
 import UIKit
 import QuartzCore
 
-class WobbleView: UIView, WobbleDelegate {
+public class WobbleView: UIView, WobbleDelegate {
     
     /*
     The frequency of oscillation for the wobble behavior.
     */
-    @IBInspectable var frequency: CGFloat = 3
+    @IBInspectable public var frequency: CGFloat = 3
     
     /*
     The amount of damping to apply to the wobble behavior.
     */
-    @IBInspectable var damping: CGFloat = 0.3
+    @IBInspectable public var damping: CGFloat = 0.3
     
     /*
     A bitmask value that identifies the edges that you want to wobble.
     You can use this parameter to wobble only a subset of the edges of the rectangle.
     */
-    @IBInspectable var edges: ViewEdge = ViewEdge.All
+    @IBInspectable public var edges: ViewEdge = ViewEdge.All
     
     // MARK: init
-    required init(coder aDecoder: NSCoder) {
+    required public init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
         setUp()
     }
     
-    override init(frame: CGRect) {
+    override public init(frame: CGRect) {
         super.init(frame: frame)
         
         setUp()
     }
     
-    func setUp() {
+    private func setUp() {
         
         layer.masksToBounds = false
         layer.addSublayer(maskLayer)
@@ -53,7 +53,7 @@ class WobbleView: UIView, WobbleDelegate {
         setUpDisplayLink()
     }
     
-    func setUpVertices() {
+    private func setUpVertices() {
         
         vertexViews = []
         
@@ -65,7 +65,7 @@ class WobbleView: UIView, WobbleDelegate {
         createAdditionalViews(&vertexViews, origins: verticesOrigins)
     }
     
-    func setUpMidpoints() {
+    private func setUpMidpoints() {
         
         midpointViews = []
         
@@ -77,7 +77,7 @@ class WobbleView: UIView, WobbleDelegate {
         createAdditionalViews(&midpointViews, origins: midpointsOrigins)
     }
     
-    func setUpCenter() {
+    private func setUpCenter() {
         
         var centerOrigin = CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height/2)
         
@@ -86,7 +86,7 @@ class WobbleView: UIView, WobbleDelegate {
         addSubview(centerView)
     }
     
-    func setUpBehaviours() {
+    private func setUpBehaviours() {
         
         animator = UIDynamicAnimator(referenceView: self)
         animator!.delegate = self
@@ -104,14 +104,14 @@ class WobbleView: UIView, WobbleDelegate {
         }
     }
     
-    func setUpDisplayLink() {
+    private func setUpDisplayLink() {
         displayLink = CADisplayLink(target: self, selector: "displayLinkUpdate:")
         displayLink!.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
         displayLink!.paused = true
     }
     
     // MARK: CADisplayLink selector
-    func displayLinkUpdate(sender: CADisplayLink) {
+    internal func displayLinkUpdate(sender: CADisplayLink) {
         
         for behavour in centerAttachments {
             behavour.anchorPoint = centerView.layer.presentationLayer().frame.origin
@@ -135,18 +135,18 @@ class WobbleView: UIView, WobbleDelegate {
     }
     
     // MARK: overrides
-    override var backgroundColor: UIColor? {
+    override public var backgroundColor: UIColor? {
         didSet {
             (layer as! CAShapeLayer).fillColor = backgroundColor!.CGColor
         }
     }
     
-    override class func layerClass() -> AnyClass {
+    override public class func layerClass() -> AnyClass {
         return WobbleLayer.self
     }
     
     // MARK: helpers
-    func createAdditionalViews(inout views: [UIView], origins: [CGPoint]) {
+    private func createAdditionalViews(inout views: [UIView], origins: [CGPoint]) {
         
         for origin in origins {
             
@@ -158,7 +158,7 @@ class WobbleView: UIView, WobbleDelegate {
         }
     }
     
-    func createVertexAttachment(view: UIView, vertexIndex: Int) {
+    private func createVertexAttachment(view: UIView, vertexIndex: Int) {
         
         var formerVertexAttachment = MidPointAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
         formerVertexAttachment.damping = damping
@@ -169,7 +169,7 @@ class WobbleView: UIView, WobbleDelegate {
         verticesAttachments.append(formerVertexAttachment)
     }
     
-    func createCenterAttachment(view: UIView) {
+    private func createCenterAttachment(view: UIView) {
         
         var centerAttachment = UIAttachmentBehavior(item: view, attachedToAnchor: centerView.frame.origin)
         centerAttachment.damping = damping
@@ -179,7 +179,7 @@ class WobbleView: UIView, WobbleDelegate {
         centerAttachments.append(centerAttachment)
     }
     
-    func addEdge(inout bezierPath: UIBezierPath, formerVertex: Int, latterVertex: Int, curved: ViewEdge) {
+    private func addEdge(inout bezierPath: UIBezierPath, formerVertex: Int, latterVertex: Int, curved: ViewEdge) {
         
         if (curved) {
             
@@ -217,9 +217,9 @@ class WobbleView: UIView, WobbleDelegate {
 }
 
 // MARK: UIDynamicAnimatorDelegate
-extension WobbleView: UIDynamicAnimatorDelegate {
+ extension WobbleView: UIDynamicAnimatorDelegate {
     
-    func dynamicAnimatorDidPause(animator: UIDynamicAnimator) {
+    public func dynamicAnimatorDidPause(animator: UIDynamicAnimator) {
         displayLink!.paused = true
     }
 }
@@ -271,49 +271,49 @@ private class WobbleLayer: CAShapeLayer {
     }
 }
 
-struct ViewEdge : RawOptionSetType, BooleanType {
+public struct ViewEdge : RawOptionSetType, BooleanType {
     
     private var value: UInt = 0
     
-    init(nilLiteral: ()) {}
+    public init(nilLiteral: ()) {}
     
-    init(rawValue value: UInt) {
+    public init(rawValue value: UInt) {
         self.value = value
     }
     
-    var boolValue: Bool {
+    public var boolValue: Bool {
         return value != 0
     }
     
-    var rawValue: UInt {
+    public var rawValue: UInt {
         return value
     }
     
-    static var allZeros: ViewEdge {
+    static public var allZeros: ViewEdge {
         return self(rawValue: 0)
     }
     
-    static var None: ViewEdge {
+    static public var None: ViewEdge {
         return self(rawValue: 0b0000)
     }
     
-    static var Left: ViewEdge{
+    static public var Left: ViewEdge{
         return self(rawValue: 0b0001)
     }
     
-    static var Top: ViewEdge {
+    static public var Top: ViewEdge {
         return self(rawValue: 0b0010)
     }
     
-    static var Right: ViewEdge {
+    static public var Right: ViewEdge {
         return self(rawValue: 0b0100)
     }
     
-    static var Bottom: ViewEdge {
+    static public var Bottom: ViewEdge {
         return self(rawValue: 0b1000)
     }
     
-    static var All: ViewEdge {
+    static public var All: ViewEdge {
         return self(rawValue: 0b1111)
     }
 }
