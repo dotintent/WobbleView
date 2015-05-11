@@ -68,8 +68,13 @@ extension TableViewCell: UIGestureRecognizerDelegate
 {
     override func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
         
-        var velocity = (gestureRecognizer as! UIPanGestureRecognizer).velocityInView(gestureRecognizer.view!)
+        if gestureRecognizer.isKindOfClass(UIPanGestureRecognizer) {
+            
+            var velocity = (gestureRecognizer as! UIPanGestureRecognizer).velocityInView(gestureRecognizer.view!)
+            
+            return fabs(velocity.x) > fabs(velocity.y)
+        }
         
-        return fabs(velocity.x) > fabs(velocity.y)
+        return true;
     }
 }
