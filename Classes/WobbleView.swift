@@ -9,7 +9,7 @@
 import UIKit
 import QuartzCore
 
-public class WobbleView: UIView, WobbleDelegate {
+public class WobbleView: UIView {
     
     /*
     The frequency of oscillation for the wobble behavior.
@@ -25,10 +25,10 @@ public class WobbleView: UIView, WobbleDelegate {
     A bitmask value that identifies the edges that you want to wobble.
     You can use this parameter to wobble only a subset of the edges of the rectangle.
     */
-    @IBInspectable public var edges: ViewEdge = ViewEdge.All
+    @IBInspectable public var edges: ViewEdge = .Right
     
     // MARK: init
-    required public init(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
         setUp()
@@ -51,6 +51,27 @@ public class WobbleView: UIView, WobbleDelegate {
         setUpCenters()
         setUpBehaviours()
         setUpDisplayLink()
+    }
+    
+    public func reset() {
+        
+        setUpMidpoints()
+        setUpCenters()
+        setUpBehaviours()
+        
+        if vertexViews[0].layer.presentationLayer() != nil {
+            
+            let bezierPath = UIBezierPath()
+            bezierPath.moveToPoint(vertexViews[0].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.addLineToPoint(vertexViews[1].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.addLineToPoint(vertexViews[2].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.addLineToPoint(vertexViews[3].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.closePath()
+            
+            maskLayer.path = bezierPath.CGPath
+            (layer as! CAShapeLayer).path = bezierPath.CGPath
+            layer.mask = maskLayer
+        }
     }
     
     private func setUpVertices() {
@@ -81,7 +102,7 @@ public class WobbleView: UIView, WobbleDelegate {
         
         centerViews = []
         
-        var radius = min(frame.size.width/2, frame.size.height/2)
+        let radius = min(frame.size.width/2, frame.size.height/2)
         
         let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
             CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
@@ -98,7 +119,7 @@ public class WobbleView: UIView, WobbleDelegate {
         verticesAttachments = []
         centersAttachments = []
         
-        for (i, midPointView) in enumerate(midpointViews) {
+        for (i, midPointView) in midpointViews.enumerate() {
             
             let formerVertexIndex = i
             let latterVertexIndex = (i + 1) % vertexViews.count
@@ -119,19 +140,19 @@ public class WobbleView: UIView, WobbleDelegate {
     internal func displayLinkUpdate(sender: CADisplayLink) {
         
         for behavour in centersAttachments {
-            behavour.anchorPoint = centerViews[behavour.vertexIndex!].layer.presentationLayer().frame.origin
+            behavour.anchorPoint = centerViews[behavour.vertexIndex!].layer.presentationLayer()!.frame.origin
         }
         
         for behavour in verticesAttachments {
-            behavour.anchorPoint = vertexViews[behavour.vertexIndex!].layer.presentationLayer().frame.origin
+            behavour.anchorPoint = vertexViews[behavour.vertexIndex!].layer.presentationLayer()!.frame.origin
         }
         
         var bezierPath = UIBezierPath()
-        bezierPath.moveToPoint(vertexViews[0].layer.presentationLayer().frame.origin - layer.presentationLayer().frame.origin)
-        addEdge(&bezierPath, formerVertex: 0, latterVertex: 1, curved: edges & ViewEdge.Top)
-        addEdge(&bezierPath, formerVertex: 1, latterVertex: 2, curved: edges & ViewEdge.Right)
-        addEdge(&bezierPath, formerVertex: 2, latterVertex: 3, curved: edges & ViewEdge.Bottom)
-        addEdge(&bezierPath, formerVertex: 3, latterVertex: 0, curved: edges & ViewEdge.Left)
+        bezierPath.moveToPoint(vertexViews[0].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+        addEdge(&bezierPath, formerVertex: 0, latterVertex: 1, curved: edges.intersect(.Top))
+        addEdge(&bezierPath, formerVertex: 1, latterVertex: 2, curved: edges.intersect(.Right))
+        addEdge(&bezierPath, formerVertex: 2, latterVertex: 3, curved: edges.intersect(.Bottom))
+        addEdge(&bezierPath, formerVertex: 3, latterVertex: 0, curved: edges.intersect(.Left))
         bezierPath.closePath()
         
         maskLayer.path = bezierPath.CGPath
@@ -155,7 +176,7 @@ public class WobbleView: UIView, WobbleDelegate {
         
         for origin in origins {
             
-            var view = UIView(frame: CGRect(origin: origin, size: CGSize(width: 1, height: 1)))
+            let view = UIView(frame: CGRect(origin: origin, size: CGSize(width: 1, height: 1)))
             view.backgroundColor = UIColor.clearColor()
             addSubview(view)
             
@@ -165,7 +186,7 @@ public class WobbleView: UIView, WobbleDelegate {
     
     private func createAttachmentBehaviour(inout behaviours: [VertexAttachmentBehaviour], view: UIView, vertexIndex: Int) {
         
-        var attachmentBehaviour = VertexAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
+        let attachmentBehaviour = VertexAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
         attachmentBehaviour.damping = damping
         attachmentBehaviour.frequency = frequency
         attachmentBehaviour.vertexIndex = vertexIndex
@@ -178,15 +199,15 @@ public class WobbleView: UIView, WobbleDelegate {
         
         if (curved) {
             
-            var controlPoint = (vertexViews[formerVertex].layer.presentationLayer().frame.origin - (midpointViews[formerVertex].layer.presentationLayer().frame.origin - vertexViews[latterVertex].layer.presentationLayer().frame.origin)) - layer.presentationLayer().frame.origin
+            let controlPoint = (vertexViews[formerVertex].layer.presentationLayer()!.frame.origin - (midpointViews[formerVertex].layer.presentationLayer()!.frame.origin - vertexViews[latterVertex].layer.presentationLayer()!.frame.origin)) - layer.presentationLayer()!.frame.origin
             
-            bezierPath.addQuadCurveToPoint(vertexViews[latterVertex].layer.presentationLayer().frame.origin - layer.presentationLayer().frame.origin,
+            bezierPath.addQuadCurveToPoint(vertexViews[latterVertex].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin,
                 controlPoint: controlPoint)
             
             return;
         }
         
-        bezierPath.addLineToPoint(vertexViews[latterVertex].layer.presentationLayer().frame.origin - layer.presentationLayer().frame.origin)
+        bezierPath.addLineToPoint(vertexViews[latterVertex].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
     }
     
     // MARK: private variables
@@ -212,7 +233,7 @@ public class WobbleView: UIView, WobbleDelegate {
 }
 
 // MARK: UIDynamicAnimatorDelegate
- extension WobbleView: UIDynamicAnimatorDelegate {
+extension WobbleView: UIDynamicAnimatorDelegate {
     
     public func dynamicAnimatorDidPause(animator: UIDynamicAnimator) {
         displayLink!.paused = true
@@ -231,18 +252,18 @@ extension WobbleView: WobbleDelegate {
             CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height),
             CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height)]
         
-        for (i, vertexView)  in enumerate(vertexViews)    {
+        for (i, vertexView)  in vertexViews.enumerate()    {
             vertexView.frame.origin = verticesOrigins[i]
         }
-                
-        var radius = min(frame.size.width/2, frame.size.height/2)
+        
+        let radius = min(frame.size.width/2, frame.size.height/2)
         
         let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
             CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
             CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
             CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
         
-        for (i, centerView)  in enumerate(centerViews)    {
+        for (i, centerView)  in centerViews.enumerate()    {
             centerView.frame.origin = centersOrigins[i]
         }
     }
@@ -275,7 +296,7 @@ private class WobbleLayer: CAShapeLayer {
     }
 }
 
-public struct ViewEdge : RawOptionSetType, BooleanType {
+public struct ViewEdge : OptionSetType, BooleanType {
     
     private var value: UInt = 0
     
@@ -294,30 +315,30 @@ public struct ViewEdge : RawOptionSetType, BooleanType {
     }
     
     static public var allZeros: ViewEdge {
-        return self(rawValue: 0)
+        return self.init(rawValue: 0)
     }
     
     static public var None: ViewEdge {
-        return self(rawValue: 0b0000)
+        return self.init(rawValue: 0b0000)
     }
     
     static public var Left: ViewEdge{
-        return self(rawValue: 0b0001)
+        return self.init(rawValue: 0b0001)
     }
     
     static public var Top: ViewEdge {
-        return self(rawValue: 0b0010)
+        return self.init(rawValue: 0b0010)
     }
     
     static public var Right: ViewEdge {
-        return self(rawValue: 0b0100)
+        return self.init(rawValue: 0b0100)
     }
     
     static public var Bottom: ViewEdge {
-        return self(rawValue: 0b1000)
+        return self.init(rawValue: 0b1000)
     }
     
     static public var All: ViewEdge {
-        return self(rawValue: 0b1111)
+        return self.init(rawValue: 0b1111)
     }
 }

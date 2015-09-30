@@ -1,6 +1,6 @@
 # WobbleView
 
-WobbleView is an implementation of a recently popular wobble effect for any view in your app. It can be used to easily add dynamics to user interactions and transitions. 
+WobbleView is an implementation of a recently popular wobble effect for any view in your app. It can be used to easily add dynamics to user interactions and transitions.
 
 Check this [project on Dribble](https://dribbble.com/shots/2009891-Bits-and-pixels-Wobble-Effect).
 
@@ -21,7 +21,7 @@ Just create a WobbleView and change its position.
 self.wobbleView.frame.origin = CGPoint(x: randomX, y: randomY)
 ```
 
-or 
+or
 
 ```swift
 self.wobbleView.center = CGPoint(x: randomX, y: randomY)
@@ -51,8 +51,8 @@ A bitmask value that identifies the edges that you want to wobble. You can use t
 
 ## Requirements
 
-- iOS 7.0+
-- Xcode 6.3
+- Swift 2.0
+- Xcode 7
 
 ## License
 
