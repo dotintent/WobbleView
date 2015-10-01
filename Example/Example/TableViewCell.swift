@@ -18,23 +18,26 @@ class TableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        if self.respondsToSelector(Selector("setLayoutMargins:")) {
+        if #available(iOS 8.0, *) {
             layoutMargins = UIEdgeInsetsZero
-        }
-        
-        if self.respondsToSelector(Selector("setPreservesSuperviewLayoutMargins:")) {
             preservesSuperviewLayoutMargins = false
         }
-        
-        var avatar = UIImage(named: "ic_user")?.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+
+        let avatar = UIImage(named: "ic_user")?.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
         avatarImageView.image = avatar
         avatarImageView.tintColor = UIColor(red: 187/255.0, green: 193/255.0, blue: 209/255.0, alpha: 1.0)
         
         panView.edges = ViewEdge.Right
         
-        var panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "handlePanGesture:")
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "handlePanGesture:")
         panGestureRecognizer.delegate = self
         addGestureRecognizer(panGestureRecognizer)
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        panView.reset()
     }
     
     func handlePanGesture(recognizer: UIPanGestureRecognizer) {
@@ -43,7 +46,7 @@ class TableViewCell: UITableViewCell {
             
         case UIGestureRecognizerState.Changed:
             
-            var translation = recognizer.translationInView(recognizer.view!)
+            let translation = recognizer.translationInView(recognizer.view!)
             trailingSpaceConstraint.constant = fmax(0, trailingSpaceConstraint.constant - translation.x)
             leadingSpaceConstraint.constant = fmin(0, leadingSpaceConstraint.constant + translation.x)
             recognizer.setTranslation(CGPointZero, inView: recognizer.view!)
@@ -62,19 +65,17 @@ class TableViewCell: UITableViewCell {
             leadingSpaceConstraint.constant = 0
         }
     }
-}
-
-extension TableViewCell: UIGestureRecognizerDelegate
-{
+    
     override func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
         
         if gestureRecognizer.isKindOfClass(UIPanGestureRecognizer) {
             
-            var velocity = (gestureRecognizer as! UIPanGestureRecognizer).velocityInView(gestureRecognizer.view!)
+            let velocity = (gestureRecognizer as! UIPanGestureRecognizer).velocityInView(gestureRecognizer.view!)
             
             return fabs(velocity.x) > fabs(velocity.y)
         }
         
         return true;
     }
+
 }
