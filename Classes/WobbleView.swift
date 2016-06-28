@@ -10,15 +10,10 @@ import UIKit
 import QuartzCore
 
 public class WobbleView: UIView, WobbleDelegate {
-    //on, off
-    public var on:Bool {
-        get {
-            return (layer as! WobbleLayer).on
-        }
-        set(data) {
-            (layer as! WobbleLayer).on = data
-        }
-    }
+    /*
+     The enable of WoobleView
+     */
+    @IBInspectable public var on: Bool = true
     
     /*
      The frequency of oscillation for the wobble behavior.
@@ -34,7 +29,7 @@ public class WobbleView: UIView, WobbleDelegate {
      A bitmask value that identifies the edges that you want to wobble.
      You can use this parameter to wobble only a subset of the edges of the rectangle.
      */
-    @IBInspectable public var edges: ViewEdge = ViewEdge.All
+    @IBInspectable public var edges: ViewEdge = .All
     
     // MARK: init
     required public init?(coder aDecoder: NSCoder) {
@@ -62,14 +57,35 @@ public class WobbleView: UIView, WobbleDelegate {
         setUpDisplayLink()
     }
     
+    public func reset() {
+        
+        setUpMidpoints()
+        setUpCenters()
+        setUpBehaviours()
+        
+        if vertexViews[0].layer.presentationLayer() != nil {
+            
+            let bezierPath = UIBezierPath()
+            bezierPath.moveToPoint(vertexViews[0].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.addLineToPoint(vertexViews[1].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.addLineToPoint(vertexViews[2].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.addLineToPoint(vertexViews[3].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+            bezierPath.closePath()
+            
+            maskLayer.path = bezierPath.CGPath
+            (layer as! CAShapeLayer).path = bezierPath.CGPath
+            layer.mask = maskLayer
+        }
+    }
+    
     private func setUpVertices() {
         
         vertexViews = []
         
         let verticesOrigins = [CGPoint(x: frame.origin.x, y: frame.origin.y),
-                               CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y),
-                               CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height),
-                               CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height)]
+            CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y),
+            CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height),
+            CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height)]
         
         createAdditionalViews(&vertexViews, origins: verticesOrigins)
     }
@@ -79,9 +95,9 @@ public class WobbleView: UIView, WobbleDelegate {
         midpointViews = []
         
         let midpointsOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y),
-                                CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height/2),
-                                CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height),
-                                CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height/2)]
+            CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height/2),
+            CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height),
+            CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height/2)]
         
         createAdditionalViews(&midpointViews, origins: midpointsOrigins)
     }
@@ -90,12 +106,12 @@ public class WobbleView: UIView, WobbleDelegate {
         
         centerViews = []
         
-        var radius = min(frame.size.width/2, frame.size.height/2)
+        let radius = min(frame.size.width/2, frame.size.height/2)
         
         let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
-                              CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
-                              CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
-                              CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
+            CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
+            CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
+            CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
         
         createAdditionalViews(&centerViews, origins: centersOrigins)
     }
@@ -164,7 +180,7 @@ public class WobbleView: UIView, WobbleDelegate {
         
         for origin in origins {
             
-            var view = UIView(frame: CGRect(origin: origin, size: CGSize(width: 1, height: 1)))
+            let view = UIView(frame: CGRect(origin: origin, size: CGSize(width: 1, height: 1)))
             view.backgroundColor = UIColor.clearColor()
             addSubview(view)
             
@@ -174,7 +190,7 @@ public class WobbleView: UIView, WobbleDelegate {
     
     private func createAttachmentBehaviour(inout behaviours: [VertexAttachmentBehaviour], view: UIView, vertexIndex: Int) {
         
-        var attachmentBehaviour = VertexAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
+        let attachmentBehaviour = VertexAttachmentBehaviour(item: view, attachedToAnchor: vertexViews[vertexIndex].frame.origin)
         attachmentBehaviour.damping = damping
         attachmentBehaviour.frequency = frequency
         attachmentBehaviour.vertexIndex = vertexIndex
@@ -227,17 +243,20 @@ extension WobbleView: UIDynamicAnimatorDelegate {
     }
 }
 
-// MARK: WobbleDelegate
+// MARK: Extension
 extension WobbleView {
+    func isOn() -> Bool {
+        return self.on
+    }
     
     func positionChanged() {
         
         displayLink!.paused = false
         
         let verticesOrigins = [CGPoint(x: frame.origin.x, y: frame.origin.y),
-                               CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y),
-                               CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height),
-                               CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height)]
+            CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y),
+            CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height),
+            CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height)]
         
         for (i, vertexView)  in vertexViews.enumerate()   {
             vertexView.frame.origin = verticesOrigins[i]
@@ -246,9 +265,9 @@ extension WobbleView {
         var radius = min(frame.size.width/2, frame.size.height/2)
         
         let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
-                              CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
-                              CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
-                              CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
+            CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
+            CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + frame.height - radius),
+            CGPoint(x: frame.origin.x + radius, y: frame.origin.y + frame.height/2)]
         
         for (i, centerView)  in centerViews.enumerate()    {
             centerView.frame.origin = centersOrigins[i]
@@ -268,19 +287,15 @@ private class VertexAttachmentBehaviour: UIAttachmentBehavior {
     var vertexIndex: Int?
 }
 
-private protocol WobbleDelegate {
-    func positionChanged()
-}
-
 private class WobbleLayer: CAShapeLayer {
-    var on:Bool = false
-    
     var wobbleDelegate: WobbleDelegate?
     
     @objc override var position: CGPoint {
         didSet {
-            if on {
-                wobbleDelegate?.positionChanged()
+            if let delegate = wobbleDelegate {
+                if delegate.isOn() {
+                    delegate.positionChanged()
+                }
             }
         }
     }
@@ -331,4 +346,11 @@ public struct ViewEdge : OptionSetType, BooleanType {
     static public var All: ViewEdge {
         return self.init(rawValue: 0b1111)
     }
+}
+
+// MARK: WoobbleDelegate
+
+private protocol WobbleDelegate {
+    func isOn() -> Bool
+    func positionChanged()
 }
