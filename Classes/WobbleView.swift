@@ -10,22 +10,26 @@ import UIKit
 import QuartzCore
 
 public class WobbleView: UIView {
+    /*
+     The enable of WoobleView
+     */
+    @IBInspectable public var on: Bool = true
     
     /*
-    The frequency of oscillation for the wobble behavior.
-    */
+     The frequency of oscillation for the wobble behavior.
+     */
     @IBInspectable public var frequency: CGFloat = 3
     
     /*
-    The amount of damping to apply to the wobble behavior.
-    */
+     The amount of damping to apply to the wobble behavior.
+     */
     @IBInspectable public var damping: CGFloat = 0.3
     
     /*
-    A bitmask value that identifies the edges that you want to wobble.
-    You can use this parameter to wobble only a subset of the edges of the rectangle.
-    */
-    @IBInspectable public var edges: ViewEdge = .Right
+     A bitmask value that identifies the edges that you want to wobble.
+     You can use this parameter to wobble only a subset of the edges of the rectangle.
+     */
+    @IBInspectable public var edges: ViewEdge = .All
     
     // MARK: init
     required public init?(coder aDecoder: NSCoder) {
@@ -149,10 +153,10 @@ public class WobbleView: UIView {
         
         var bezierPath = UIBezierPath()
         bezierPath.moveToPoint(vertexViews[0].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
-        addEdge(&bezierPath, formerVertex: 0, latterVertex: 1, curved: edges.intersect(.Top))
-        addEdge(&bezierPath, formerVertex: 1, latterVertex: 2, curved: edges.intersect(.Right))
-        addEdge(&bezierPath, formerVertex: 2, latterVertex: 3, curved: edges.intersect(.Bottom))
-        addEdge(&bezierPath, formerVertex: 3, latterVertex: 0, curved: edges.intersect(.Left))
+        addEdge(&bezierPath, formerVertex: 0, latterVertex: 1, curved: ViewEdge(rawValue: edges.rawValue & ViewEdge.Top.rawValue))
+        addEdge(&bezierPath, formerVertex: 1, latterVertex: 2, curved: ViewEdge(rawValue: edges.rawValue & ViewEdge.Right.rawValue))
+        addEdge(&bezierPath, formerVertex: 2, latterVertex: 3, curved: ViewEdge(rawValue: edges.rawValue & ViewEdge.Bottom.rawValue))
+        addEdge(&bezierPath, formerVertex: 3, latterVertex: 0, curved: ViewEdge(rawValue: edges.rawValue & ViewEdge.Left.rawValue))
         bezierPath.closePath()
         
         maskLayer.path = bezierPath.CGPath
@@ -198,16 +202,15 @@ public class WobbleView: UIView {
     private func addEdge(inout bezierPath: UIBezierPath, formerVertex: Int, latterVertex: Int, curved: ViewEdge) {
         
         if (curved) {
-            
-            let controlPoint = (vertexViews[formerVertex].layer.presentationLayer()!.frame.origin - (midpointViews[formerVertex].layer.presentationLayer()!.frame.origin - vertexViews[latterVertex].layer.presentationLayer()!.frame.origin)) - layer.presentationLayer()!.frame.origin
+            var controlPoint = ((vertexViews[formerVertex].layer.presentationLayer()?.frame.origin)! - ((midpointViews[formerVertex].layer.presentationLayer()?.frame.origin)! - (vertexViews[latterVertex].layer.presentationLayer()?.frame.origin)!)) - (layer.presentationLayer()?.frame.origin)!
             
             bezierPath.addQuadCurveToPoint(vertexViews[latterVertex].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin,
-                controlPoint: controlPoint)
+                                           controlPoint: controlPoint)
             
             return;
         }
         
-        bezierPath.addLineToPoint(vertexViews[latterVertex].layer.presentationLayer()!.frame.origin - layer.presentationLayer()!.frame.origin)
+        bezierPath.addLineToPoint((vertexViews[latterVertex].layer.presentationLayer()?.frame.origin)! - (layer.presentationLayer()?.frame.origin)!)
     }
     
     // MARK: private variables
@@ -240,8 +243,11 @@ extension WobbleView: UIDynamicAnimatorDelegate {
     }
 }
 
-// MARK: WobbleDelegate
+// MARK: Extension
 extension WobbleView: WobbleDelegate {
+    func isOn() -> Bool {
+        return self.on
+    }
     
     func positionChanged() {
         
@@ -252,7 +258,7 @@ extension WobbleView: WobbleDelegate {
             CGPoint(x: frame.origin.x + frame.width, y: frame.origin.y + frame.height),
             CGPoint(x: frame.origin.x, y: frame.origin.y + frame.height)]
         
-        for (i, vertexView)  in vertexViews.enumerate()    {
+        for (i, vertexView)  in vertexViews.enumerate()   {
             vertexView.frame.origin = verticesOrigins[i]
         }
         
@@ -281,17 +287,16 @@ private class VertexAttachmentBehaviour: UIAttachmentBehavior {
     var vertexIndex: Int?
 }
 
-private protocol WobbleDelegate {
-    func positionChanged()
-}
-
 private class WobbleLayer: CAShapeLayer {
-    
     var wobbleDelegate: WobbleDelegate?
     
     @objc override var position: CGPoint {
         didSet {
-            wobbleDelegate?.positionChanged()
+            if let delegate = wobbleDelegate {
+                if delegate.isOn() {
+                    delegate.positionChanged()
+                }
+            }
         }
     }
 }
@@ -341,4 +346,11 @@ public struct ViewEdge : OptionSetType, BooleanType {
     static public var All: ViewEdge {
         return self.init(rawValue: 0b1111)
     }
+}
+
+// MARK: WoobbleDelegate
+
+private protocol WobbleDelegate {
+    func isOn() -> Bool
+    func positionChanged()
 }
