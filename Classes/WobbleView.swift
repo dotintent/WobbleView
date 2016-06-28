@@ -9,7 +9,7 @@
 import UIKit
 import QuartzCore
 
-public class WobbleView: UIView, WobbleDelegate {
+public class WobbleView: UIView {
     /*
      The enable of WoobleView
      */
@@ -244,7 +244,7 @@ extension WobbleView: UIDynamicAnimatorDelegate {
 }
 
 // MARK: Extension
-extension WobbleView {
+extension WobbleView: WobbleDelegate {
     func isOn() -> Bool {
         return self.on
     }
