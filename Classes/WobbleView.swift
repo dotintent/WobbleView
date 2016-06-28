@@ -262,7 +262,7 @@ extension WobbleView {
             vertexView.frame.origin = verticesOrigins[i]
         }
         
-        var radius = min(frame.size.width/2, frame.size.height/2)
+        let radius = min(frame.size.width/2, frame.size.height/2)
         
         let centersOrigins = [CGPoint(x: frame.origin.x + frame.width/2, y: frame.origin.y + radius),
             CGPoint(x: frame.origin.x + frame.width - radius, y: frame.origin.y + frame.height/2),
