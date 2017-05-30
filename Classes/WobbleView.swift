@@ -271,7 +271,12 @@ extension WobbleView: WobbleDelegate {
 
 // MARK: helper classes
 
-infix  operator - { associativity left precedence 160 }
+infix operator - : SubtractionPrecedence
+
+precedencegroup SubtractionPrecedence {
+    associativity: left
+    higherThan: AdditionPrecedence
+}
 
 private func - (left: CGPoint, right: CGPoint) -> CGPoint {
     return CGPoint(x: left.x - right.x, y: left.y - right.y)

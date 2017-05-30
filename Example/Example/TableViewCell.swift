@@ -29,7 +29,7 @@ class TableViewCell: UITableViewCell {
         
         panView.edges = ViewEdge.Right
         
-        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "handlePanGesture:")
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(TableViewCell.handlePanGesture(_:)))
         panGestureRecognizer.delegate = self
         addGestureRecognizer(panGestureRecognizer)
     }
