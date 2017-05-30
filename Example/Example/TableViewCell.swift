@@ -19,17 +19,17 @@ class TableViewCell: UITableViewCell {
         super.awakeFromNib()
         
         if #available(iOS 8.0, *) {
-            layoutMargins = UIEdgeInsetsZero
+            layoutMargins = UIEdgeInsets.zero
             preservesSuperviewLayoutMargins = false
         }
 
-        let avatar = UIImage(named: "ic_user")?.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+        let avatar = UIImage(named: "ic_user")?.withRenderingMode(UIImageRenderingMode.alwaysTemplate)
         avatarImageView.image = avatar
         avatarImageView.tintColor = UIColor(red: 187/255.0, green: 193/255.0, blue: 209/255.0, alpha: 1.0)
         
         panView.edges = ViewEdge.Right
         
-        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "handlePanGesture:")
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(TableViewCell.handlePanGesture(_:)))
         panGestureRecognizer.delegate = self
         addGestureRecognizer(panGestureRecognizer)
     }
@@ -40,23 +40,23 @@ class TableViewCell: UITableViewCell {
         panView.reset()
     }
     
-    func handlePanGesture(recognizer: UIPanGestureRecognizer) {
+    func handlePanGesture(_ recognizer: UIPanGestureRecognizer) {
         
         switch(recognizer.state) {
             
-        case UIGestureRecognizerState.Changed:
+        case UIGestureRecognizerState.changed:
             
-            let translation = recognizer.translationInView(recognizer.view!)
+            let translation = recognizer.translation(in: recognizer.view!)
             trailingSpaceConstraint.constant = fmax(0, trailingSpaceConstraint.constant - translation.x)
             leadingSpaceConstraint.constant = fmin(0, leadingSpaceConstraint.constant + translation.x)
-            recognizer.setTranslation(CGPointZero, inView: recognizer.view!)
+            recognizer.setTranslation(CGPoint.zero, in: recognizer.view!)
             
-        case UIGestureRecognizerState.Ended, UIGestureRecognizerState.Cancelled:
+        case UIGestureRecognizerState.ended, UIGestureRecognizerState.cancelled:
             
             leadingSpaceConstraint.constant = 0
             trailingSpaceConstraint.constant = 0
             
-            UIView.animateWithDuration(0.25, animations: { () -> Void in
+            UIView.animate(withDuration: 0.25, animations: { () -> Void in
                 self.layoutIfNeeded()
             })
             
@@ -66,11 +66,11 @@ class TableViewCell: UITableViewCell {
         }
     }
     
-    override func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         
-        if gestureRecognizer.isKindOfClass(UIPanGestureRecognizer) {
+        if gestureRecognizer.isKind(of: UIPanGestureRecognizer.self) {
             
-            let velocity = (gestureRecognizer as! UIPanGestureRecognizer).velocityInView(gestureRecognizer.view!)
+            let velocity = (gestureRecognizer as! UIPanGestureRecognizer).velocity(in: gestureRecognizer.view!)
             
             return fabs(velocity.x) > fabs(velocity.y)
         }
